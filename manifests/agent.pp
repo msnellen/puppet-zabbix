@@ -339,6 +339,12 @@ class zabbix::agent (
     $real_service_type = $service_type
   }
 
+  if $zabbix_package_agent = 'zabbix_agent2' {
+    $agent_binary_name = 'zabbix_agent2'
+  } else {
+    $agent_binary_name = 'zabbix_agentd'
+  }
+
   # Find if listenip is set. If not, we can set to specific ip or
   # to network name. If more than 1 interfaces are available, we
   # can find the ipaddress of this specific interface if listenip
@@ -424,8 +430,9 @@ class zabbix::agent (
       zabbix_user               => $zabbix_user,
       additional_service_params => $real_additional_service_params,
       service_type              => $real_service_type,
-      service_name              => 'zabbix-agent',
+      agent_binary_name         => $agent_binary_name,
       require                   => Package[$zabbix_package_agent],
+      agent_version             => $zabbix_package_agent,
     }
   }
 
@@ -453,15 +460,28 @@ class zabbix::agent (
   }
 
   # Configuring the zabbix-agent configuration file
-  file { $agent_configfile_path:
-    ensure  => file,
-    owner   => $agent_config_owner,
-    group   => $agent_config_group,
-    mode    => '0644',
-    notify  => Service[$servicename],
-    require => Package[$zabbix_package_agent],
-    replace => true,
-    content => template('zabbix/zabbix_agentd.conf.erb'),
+  if zabbix_package_agent = 'zabbix_agent2'{
+    file { $agent_configfile_path:
+      ensure  => file,
+      owner   => $agent_config_owner,
+      group   => $agent_config_group,
+      mode    => '0644',
+      notify  => Service[$servicename],
+      require => Package[$zabbix_package_agent],
+      replace => true,
+      content => template('zabbix/zabbix_agent2.conf.erb'),
+    }
+  } else {
+    file { $agent_configfile_path:
+      ensure  => file,
+      owner   => $agent_config_owner,
+      group   => $agent_config_group,
+      mode    => '0644',
+      notify  => Service[$servicename],
+      require => Package[$zabbix_package_agent],
+      replace => true,
+      content => template('zabbix/zabbix_agentd.conf.erb'),
+    }
   }
 
   # Include dir for specific zabbix-agent checks.
