@@ -1,19 +1,22 @@
 require 'spec_helper_acceptance'
 require 'serverspec_type_zabbixapi'
 
-# rubocop:disable RSpec/LetBeforeExamples
-describe 'zabbix_template_host type', unless: default[:platform] =~ %r{(ubuntu-16.04|debian-9|debian-10)-amd64} do
-  %w[4.0 5.0 5.2].each do |zabbix_version|
-    # 5.2 server packages are not available for RHEL 7
-    next if zabbix_version == '5.2' and default[:platform] == 'el-7-x86_64'
+describe 'zabbix_template_host type', unless: default[:platform] =~ %r{(ubuntu-16.04|debian-9)-amd64} do
+  supported_versions.each do |zabbix_version|
+    # 5.2 and 5.4 server packages are not available for RHEL 7
+    next if zabbix_version == '5.2' && default[:platform] == 'el-7-x86_64'
+    next if zabbix_version == '5.4' && default[:platform] == 'el-7-x86_64'
+    # No Zabbix 5.2 packages on Debian 11
+    next if zabbix_version == '5.2' && default[:platform] == 'debian-11-amd64'
     context "create zabbix_template_host resources with zabbix version #{zabbix_version}" do
       template = case zabbix_version
                  when '4.0'
                    'Template OS Linux'
-                 else
+                 when '5.0'
                    'Template OS Linux by Zabbix agent'
+                 else
+                   'Linux by Zabbix agent'
                  end
-
 
       # This will deploy a running Zabbix setup (server, web, db) which we can
       # use for custom type tests
@@ -52,6 +55,7 @@ describe 'zabbix_template_host type', unless: default[:platform] =~ %r{(ubuntu-1
 
         zabbix_template { 'TestTemplate1':
           template_source => '/root/TestTemplate1.xml',
+          zabbix_version  => "#{zabbix_version}",
         }
 
         zabbix_template_host{ "TestTemplate1@test1.example.com": }
@@ -77,9 +81,7 @@ describe 'zabbix_template_host type', unless: default[:platform] =~ %r{(ubuntu-1
     end
 
     let(:result_hosts) do
-      zabbixapi('localhost', 'Admin', 'zabbix', 'host.get', selectParentTemplates: ['host'],
-                selectInterfaces: %w[dns ip main port type useip],
-                selectGroups: ['name'], output: ['host', '']).result
+      zabbixapi('localhost', 'Admin', 'zabbix', 'host.get', selectParentTemplates: ['host'], selectInterfaces: %w[dns ip main port type useip], selectGroups: ['name'], output: ['host', '']).result
     end
 
     context 'test1.example.com' do

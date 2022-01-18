@@ -1,168 +1,82 @@
-# == Class: zabbix::web
-#
-#  This will install the zabbix-web package and install an virtual host.
-#
-# === Requirements
-#
-#  The following is needed (or):
-#   - puppetlabs-apache
-#
-# === Parameters
-#
-# [*zabbix_url*]
+# @summary This will install the zabbix-web package and install an virtual host.
+# @param zabbix_url
 #   Url on which zabbix needs to be available. Will create an vhost in
 #   apache. Only needed when manage_vhost is set to true.
 #   Example: zabbix.example.com
-#
-# [*database_type*]
+# @param database_type
 #   Type of database. Can use the following 2 databases:
 #   - postgresql
 #   - mysql
-#
-# [*manage_repo*]
+# @param manage_repo
 #   When true, it will create repository for installing the webinterface.
-#
-# [*zabbix_version*]
-#   This is the zabbix version.
-#   Example: 2.4
-#
-# [*zabbix_timezone*]
-#   The current timezone for vhost configuration needed for the php timezone.
-#   Example: Europe/Amsterdam
-#
-# [*zabbix_template_dir*]
-#   The directory where all templates are stored before uploading via API
-#
-# [*zabbix_package_state*]
-#   The state of the package that needs to be installed: present or latest.
-#   Default: present
-#
-# [*web_config_owner*]
-#   Which user should own the web interface configuration file.
-#
-# [*web_config_group*]
-#   Which group should own the web interface configuration file.
-#
-# [*manage_vhost*]
-#   When true, it will create an vhost for apache. The parameter zabbix_url
-#   has to be set.
-#
-# [*default_vhost*]
+# @param zabbix_version This is the zabbix version.
+# @param zabbix_timezone The current timezone for vhost configuration needed for the php timezone. Example: Europe/Amsterdam
+# @param zabbix_template_dir The directory where all templates are stored before uploading via API
+# @param zabbix_package_state The state of the package that needs to be installed: present or latest.
+# @param web_config_owner Which user should own the web interface configuration file.
+# @param web_config_group Which group should own the web interface configuration file.
+# @param manage_vhost When true, it will create an vhost for apache. The parameter zabbix_url has to be set.
+# @param default_vhost
 #   When true priority of 15 is passed to zabbix vhost which would end up
 #   with marking zabbix vhost as default one, when false priority is set to 25
-#
-# [*manage_resources*]
+# @param manage_resources
 #   When true, it will export resources to something like puppetdb.
 #   When set to true, you'll need to configure 'storeconfigs' to make
 #   this happen. Default is set to false, as not everyone has this
 #   enabled.
-#
-# [*apache_use_ssl*]
+# @param apache_use_ssl
 #   Will create an ssl vhost. Also nonssl vhost will be created for redirect
 #   nonssl to ssl vhost.
-#
-# [*apache_ssl_cert*]
+# @param apache_ssl_cert
 #   The location of the ssl certificate file. You'll need to make sure this
 #   file is present on the system, this module will not install this file.
-#
-# [*apache_ssl_key*]
+# @param apache_ssl_key
 #   The location of the ssl key file. You'll need to make sure this file is
 #   present on the system, this module will not install this file.
-#
-# [*apache_ssl_cipher*]
+# @param apache_ssl_cipher
 #   The ssl cipher used. Cipher is used from this website:
 #   https://wiki.mozilla.org/Security/Server_Side_TLS
-#
-# [*apache_ssl_chain*}
-#   The ssl chain file.
-#
-# [*apache_listenport*}
-#   The port for the apache vhost.
-#
-# [*apache_listenport_ssl*}
-#   The port for the apache SSL vhost.
-#
-# [*zabbix_api_user*]
-#   Name of the user which the api should connect to. Default: Admin
-#
-# [*zabbix_api_pass*]
-#   Password of the user which connects to the api. Default: zabbix
-#
-# [*database_host*]
-#   Database host name.
-#
-# [*database_name*]
-#   Database name.
-#
-# [*database_schema*]
-#   Schema name. used for ibm db2.
-#
-# [*database_user*]
-#   Database user. ignored for sqlite.
-#
-# [*database_password*]
-#   Database password. ignored for sqlite.
-#
-# [*database_socket*]
-#   Path to mysql socket.
-#
-# [*database_port*]
-#   Database port when not using local socket. Ignored for sqlite.
-#
-# [*zabbix_server*]
-#   The fqdn name of the host running the zabbix-server. When single node:
-#   localhost
-#
-# [*zabbix_server_name*]
+# @param apache_ssl_chain The ssl chain file.
+# @param apache_listen_ip The IP the apache service should listen on.
+# @param apache_listenport The port for the apache vhost.
+# @param apache_listenport_ssl The port for the apache SSL vhost.
+# @param zabbix_api_user Name of the user which the api should connect to. Default: Admin
+# @param zabbix_api_pass Password of the user which connects to the api. Default: zabbix
+# @param database_host Database host name.
+# @param database_name Database name.
+# @param database_schema Schema name. used for ibm db2.
+# @param database_double_ieee754
+#   Enable extended range of float values for new installs of Zabbix >= 5.0 and
+#   after patching upgraded installs to 5.0 or greater.
+#   https://www.zabbix.com/documentation/5.0/manual/installation/upgrade_notes_500#enabling_extended_range_of_numeric_float_values
+# @param database_user Database user. ignored for sqlite.
+# @param database_password Database password. ignored for sqlite.
+# @param database_socket Path to mysql socket.
+# @param database_port Database port when not using local socket. Ignored for sqlite.
+# @param zabbix_server The fqdn name of the host running the zabbix-server. When single node: localhost
+# @param zabbix_server_name
 #   The fqdn name of the host running the zabbix-server. When single node:
 #   localhost
 #   This can also be used to upave a different name such as "Zabbix DEV"
-#
-# [*zabbix_listenport*]
-#   The port on which the zabbix-server is listening. Default: 10051
-#
-# [*apache_php_max_execution_time*]
-#   Max execution time for php. Default: 300
-#
-# [*apache_php_memory_limit*]
-#   PHP memory size limit. Default: 128M
-#
-# [*apache_php_post_max_size*]
-#   PHP maximum post size data. Default: 16M
-#
-# [*apache_php_upload_max_filesize*]
-#   PHP maximum upload filesize. Default: 2M
-#
-# [*apache_php_max_input_time*]
-#   Max input time for php. Default: 300
-#
-# [*apache_php_always_populate_raw_post_data*]
-#   Default: -1
-#
-# [*apache_php_max_input_vars*]
-#   Max amount of vars for GET/POST requests
-#
-# [*ldap_cacert*]
-#  Set location of ca_cert used by LDAP authentication.
-#
-# [*ldap_clientcrt*]
-#  Set location of client cert used by LDAP authentication.
-#
-# [*ldap_clientkey*]
-# Set location of client key used by LDAP authentication.
-#
-# [*ldap_reqcert *]
-# Specifies what checks to perform on a server certificate
-#
-# [*puppetgem*]
-# Provider for the zabbixapi gem package
-#
-# === Example
-#
-#   When running everything on a single node, please check
-#   documentation in init.pp
-#   The following is an example of an multiple host setup:
-#
+# @param zabbix_listenport The port on which the zabbix-server is listening. Default: 10051
+# @param apache_php_max_execution_time Max execution time for php. Default: 300
+# @param apache_php_memory_limit PHP memory size limit. Default: 128M
+# @param apache_php_post_max_size PHP maximum post size data. Default: 16M
+# @param apache_php_upload_max_filesize PHP maximum upload filesize. Default: 2M
+# @param apache_php_max_input_time Max input time for php. Default: 300
+# @param apache_php_always_populate_raw_post_data Default: -1
+# @param apache_php_max_input_vars Max amount of vars for GET/POST requests
+# @param ldap_cacert Set location of ca_cert used by LDAP authentication.
+# @param ldap_clientcert Set location of client cert used by LDAP authentication.
+# @param ldap_clientkey Set location of client key used by LDAP authentication.
+# @param ldap_reqcert Specifies what checks to perform on a server certificate
+# @param saml_sp_key The location of the SAML Service Provider Key file.
+# @param saml_sp_cert The location of the SAML Service Provider Certificate.
+# @param saml_idp_cert The location of the SAML Identity Provider Certificate.
+# @param saml_settings A hash of additional SAML SSO settings.
+# @param puppetgem Provider for the zabbixapi gem package.
+# @param manage_selinux Whether we should manage SELinux rules.
+# @example For multiple host setup:
 #   node 'wdpuppet02.dj-wasabi.local' {
 #     class { 'apache':
 #         mpm_module => 'prefork',
@@ -176,15 +90,7 @@
 #       puppetgem     => 'gem',
 #     }
 #   }
-#
-# === Authors
-#
-# Author Name: ikben@werner-dijkerman.nl
-#
-# === Copyright
-#
-# Copyright 2016 Werner Dijkerman
-#
+# @author Werner Dijkerman <ikben@werner-dijkerman.nl>
 class zabbix::web (
   $zabbix_url                                                         = $zabbix::params::zabbix_url,
   $database_type                                                      = $zabbix::params::database_type,
@@ -211,6 +117,7 @@ class zabbix::web (
   $database_host                                                      = $zabbix::params::server_database_host,
   $database_name                                                      = $zabbix::params::server_database_name,
   $database_schema                                                    = $zabbix::params::server_database_schema,
+  Boolean $database_double_ieee754                                    = $zabbix::params::server_database_double_ieee754,
   $database_user                                                      = $zabbix::params::server_database_user,
   $database_password                                                  = $zabbix::params::server_database_password,
   $database_socket                                                    = $zabbix::params::server_database_socket,
@@ -225,10 +132,14 @@ class zabbix::web (
   $apache_php_max_input_time                                          = $zabbix::params::apache_php_max_input_time,
   $apache_php_always_populate_raw_post_data                           = $zabbix::params::apache_php_always_populate_raw_post_data,
   $apache_php_max_input_vars                                          = $zabbix::params::apache_php_max_input_vars,
-  $ldap_cacert                                                        = $zabbix::params::ldap_cacert,
-  $ldap_clientcert                                                    = $zabbix::params::ldap_clientcert,
-  $ldap_clientkey                                                     = $zabbix::params::ldap_clientkey,
+  Optional[Stdlib::Absolutepath] $ldap_cacert                         = $zabbix::params::ldap_cacert,
+  Optional[Stdlib::Absolutepath] $ldap_clientcert                     = $zabbix::params::ldap_clientcert,
+  Optional[Stdlib::Absolutepath] $ldap_clientkey                      = $zabbix::params::ldap_clientkey,
   Optional[Enum['never','allow','try','demand','hard']] $ldap_reqcert = $zabbix::params::ldap_reqcert,
+  Optional[Stdlib::Absolutepath] $saml_sp_key                         = $zabbix::params::saml_sp_key,
+  Optional[Stdlib::Absolutepath] $saml_sp_cert                        = $zabbix::params::saml_sp_cert,
+  Optional[Stdlib::Absolutepath] $saml_idp_cert                       = $zabbix::params::saml_idp_cert,
+  Hash[String[1], Variant[ScalarData, Hash]] $saml_settings           = $zabbix::params::saml_settings,
   $puppetgem                                                          = $zabbix::params::puppetgem,
   Boolean $manage_selinux                                             = $zabbix::params::manage_selinux,
 ) inherits zabbix::params {
@@ -242,6 +153,12 @@ class zabbix::web (
   if $facts['os']['name'] in ['ubuntu', 'debian'] and versioncmp($zabbix_version, '5') >= 0 {
     if versioncmp($facts['os']['release']['major'], '16.04') == 0 or versioncmp($facts['os']['release']['major'], '9') == 0 {
       fail("${facts['os']['family']} ${$facts['os']['release']['major']} is not supported for zabbix::web")
+    }
+  }
+
+  if $facts['os']['family'] == 'Debian' and versioncmp($facts['os']['release']['major'], '11') == 0 {
+    if versioncmp($zabbix_version, '5.2') == 0 {
+      fail('Zabbix 5.2 is not supported on Debian 11!')
     }
   }
 
@@ -275,25 +192,10 @@ class zabbix::web (
   if $manage_resources {
     # Determine correct zabbixapi version.
     case $zabbix_version {
-      '2.2': {
-        $zabbixapi_version = '2.2.2'
-      }
-      '2.4': {
-        $zabbixapi_version = '2.4.4'
-      }
-      '3.2' : {
-        $zabbixapi_version = '3.2.1'
-      }
-      '3.4' : {
-        $zabbixapi_version = '4.0.0'
-      }
       '4.0': {
         $zabbixapi_version = '4.2.0'
       }
-      '4.4': {
-        $zabbixapi_version = '4.2.0'
-      }
-      /^5\.[02]/: {
+      /^5\.[024]/: {
         $zabbixapi_version = '5.0.0-alpha1'
       }
       default: {
@@ -359,12 +261,7 @@ class zabbix::web (
     }
     'CentOS', 'RedHat': {
       $zabbix_web_package = 'zabbix-web'
-      if ($facts['os']['release']['major'] == '7' and versioncmp($zabbix_version, '5') >= 0) {
-        package { 'zabbix-required-scl-repo':
-          ensure => 'latest',
-          name   => 'centos-release-scl',
-        }
-
+      if ($facts['os']['release']['major'] == '7' and versioncmp($zabbix_version, '5.0') >= 0) {
         package { "zabbix-web-${db}-scl":
           ensure  => $zabbix_package_state,
           before  => Package[$zabbix_web_package],
@@ -431,20 +328,27 @@ class zabbix::web (
   # Is set to true, it will create the apache vhost.
   if $manage_vhost {
     include apache
-    if $facts['os']['family'] == 'RedHat' and versioncmp($facts['os']['release']['major'], '7') == 0 and versioncmp($zabbix_version, '5') >= 0 {
+    if $facts['os']['family'] == 'RedHat' and versioncmp($facts['os']['release']['major'], '7') >= 0 and versioncmp($zabbix_version, '5') >= 0 {
+      if versioncmp($facts['os']['release']['major'], '7') == 0 {
+        $fpm_service = 'rh-php72-php-fpm'
+        # PHP parameters are moved to /etc/opt/rh/rh-php72/php-fpm.d/zabbix.conf per package zabbix-web-deps-scl
+        $fpm_scl_prefix = '/opt/rh/rh-php72'
+      } else {
+        $fpm_service = 'php-fpm'
+        $fpm_scl_prefix = ''
+      }
       include apache::mod::proxy
       include apache::mod::proxy_fcgi
       $apache_vhost_custom_fragment = ''
 
-      service { 'rh-php72-php-fpm':
+      service { $fpm_service:
         ensure => 'running',
         enable => true,
       }
 
-      # PHP parameters are moved to /etc/opt/rh/rh-php72/php-fpm.d/zabbix.conf per package zabbix-web-deps-scl
-      file { '/etc/opt/rh/rh-php72/php-fpm.d/zabbix.conf':
+      file { "/etc${fpm_scl_prefix}/php-fpm.d/zabbix.conf":
         ensure  => file,
-        notify  => Service['rh-php72-php-fpm'],
+        notify  => Service[$fpm_service],
         content => epp('zabbix/web/php-fpm.d.zabbix.conf.epp'),
       }
 
@@ -457,7 +361,7 @@ class zabbix::web (
               'php',
               'phar',
             ],
-            handler => 'proxy:unix:/var/opt/rh/rh-php72/run/php-fpm/zabbix.sock|fcgi://localhost',
+            handler => "proxy:unix:/var${fpm_scl_prefix}/run/php-fpm/zabbix.sock|fcgi://localhost",
           },
         ],
       }

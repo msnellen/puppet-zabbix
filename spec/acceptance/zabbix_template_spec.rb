@@ -1,11 +1,13 @@
 require 'spec_helper_acceptance'
 require 'serverspec_type_zabbixapi'
 
-# rubocop:disable RSpec/LetBeforeExamples
-describe 'zabbix_template type', unless: default[:platform] =~ %r{(ubuntu-16.04|debian-9|debian-10)-amd64} do
-  %w[4.0 5.0 5.2].each do |zabbix_version|
-    # 5.2 server packages are not available for RHEL 7
-    next if zabbix_version == '5.2' and default[:platform] == 'el-7-x86_64'
+describe 'zabbix_template type', unless: default[:platform] =~ %r{(ubuntu-16.04|debian-9)-amd64} do
+  supported_versions.each do |zabbix_version|
+    # 5.2 and 5.4 server packages are not available for RHEL 7
+    next if zabbix_version == '5.2' && default[:platform] == 'el-7-x86_64'
+    next if zabbix_version == '5.4' && default[:platform] == 'el-7-x86_64'
+    # No Zabbix 5.2 packages on Debian 11
+    next if zabbix_version == '5.2' && default[:platform] == 'debian-11-amd64'
     context "create zabbix_template resources with zabbix version #{zabbix_version}" do
       # This will deploy a running Zabbix setup (server, web, db) which we can
       # use for custom type tests
@@ -35,6 +37,7 @@ describe 'zabbix_template type', unless: default[:platform] =~ %r{(ubuntu-16.04|
       pp2 = <<-EOS
           zabbix_template { 'TestTemplate1':
             template_source => '/root/TestTemplate1.xml',
+            zabbix_version  => "#{zabbix_version}",
           }
       EOS
 
@@ -58,8 +61,12 @@ describe 'zabbix_template type', unless: default[:platform] =~ %r{(ubuntu-16.04|
     end
 
     let(:result_templates) do
-      zabbixapi('localhost', 'Admin', 'zabbix', 'template.get', selectApplications: ['name'],
-                output: ['host']).result
+      # selectApplications parameter was removed in Zabbix 5.4
+      if zabbix_version =~ %r{5\.[^4]}
+        zabbixapi('localhost', 'Admin', 'zabbix', 'template.get', selectApplications: ['name'], output: ['host']).result
+      else
+        zabbixapi('localhost', 'Admin', 'zabbix', 'template.get', output: ['host']).result
+      end
     end
 
     context 'TestTemplate1' do

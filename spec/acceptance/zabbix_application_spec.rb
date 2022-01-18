@@ -1,29 +1,28 @@
 require 'spec_helper_acceptance'
 require 'serverspec_type_zabbixapi'
 
-# rubocop:disable RSpec/LetBeforeExamples
-describe 'zabbix_application type', unless: default[:platform] =~ %r{(ubuntu-16.04|debian-9|debian-10)-amd64} do
-  %w[4.0 5.0 5.2].each do |zabbix_version|
-    # 5.2 server packages are not available for RHEL 7
-    next if zabbix_version == '5.2' and default[:platform] == 'el-7-x86_64'
+describe 'zabbix_application type', unless: default[:platform] =~ %r{(ubuntu-16.04|debian-9)-amd64} do
+  supported_versions.each do |zabbix_version|
+    # 5.2 and 5.4 server packages are not available for RHEL 7
+    next if zabbix_version == '5.2' && default[:platform] == 'el-7-x86_64'
+    # Application API was removed in Zabbix 5.4
+    next if zabbix_version == '5.4'
+    # No Zabbix 5.2 packages on Debian 11
+    next if zabbix_version == '5.2' && default[:platform] == 'debian-11-amd64'
 
     template = case zabbix_version
                when '4.0'
                  'Template OS Linux'
-               else
+               when '5.0'
                  'Template OS Linux by Zabbix agent'
+               else
+                 'Linux by Zabbix agent'
                end
 
     context "create zabbix_application resources with zabbix version #{zabbix_version}" do
       # This will deploy a running Zabbix setup (server, web, db) which we can
       # use for custom type tests
       pp1 = <<-EOS
-        $compile_packages = $facts['os']['family'] ? {
-          'RedHat' => [ 'make', 'gcc-c++', ],
-          'Debian' => [ 'make', 'g++', ],
-          default  => [],
-        }
-        ensure_packages($compile_packages, { before => Package['zabbixapi'], })
         class { 'apache':
             mpm_module => 'prefork',
         }
@@ -73,8 +72,7 @@ describe 'zabbix_application type', unless: default[:platform] =~ %r{(ubuntu-16.
     end
 
     let(:result_templates) do
-      zabbixapi('localhost', 'Admin', 'zabbix', 'template.get', selectApplications: ['name'],
-                output: ['host']).result
+      zabbixapi('localhost', 'Admin', 'zabbix', 'template.get', selectApplications: ['name'], output: ['host']).result
     end
 
     context 'TestApplication1' do

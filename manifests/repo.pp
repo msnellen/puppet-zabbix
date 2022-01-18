@@ -1,36 +1,14 @@
-# == Class: zabbix::repo
-#
-#  If enabled, this will install the repository used for installing zabbix
-#
-#  Please note:
-#  This class will be called from zabbix::server, zabbix::proxy and
-#  zabbix::agent. No need for calling this class manually.
-#
-# === Parameters
-#
-# [*manage_repo*]
-#   When true, it will create repository for installing the server.
-#
-# [*zabbix_version*]
-#   This is the zabbix version.
-#
-# [*repo_location*]
-#   A custom repo location (e.g. your own mirror)
-#
-# [*unsupported_repo_location*]
+# @summary If enabled, this will install the repository used for installing zabbix
+# @param manage_repo When true, it will create repository for installing the server.
+# @param manage_apt Whether the module should manage apt repositories for Debian based systems.
+# @param zabbix_version This is the zabbix version.
+# @param repo_location A custom repo location (e.g. your own mirror)
+# @param frontend_repo_location A custom repo location for frontend package.
+# @param unsupported_repo_location
 #   A custom repo location for unsupported content (e.g. your own mirror)
 #   Currently only supported under RedHat based systems.
-#
-# === Authors
-#
-# Author Name:
-#   ikben@werner-dijkerman.nl
-#   Tim Meusel <tim@bastelfreak.de>
-#
-# === Copyright
-#
-# Copyright 2014 Werner Dijkerman
-#
+# @author Werner Dijkerman <ikben@werner-dijkerman.nl>
+# @author Tim Meusel <tim@bastelfreak.de>
 class zabbix::repo (
   Boolean                   $manage_repo               = $zabbix::params::manage_repo,
   Boolean                   $manage_apt                = $zabbix::params::manage_apt,
@@ -39,7 +17,7 @@ class zabbix::repo (
   Optional[Stdlib::HTTPUrl] $unsupported_repo_location = $zabbix::params::unsupported_repo_location,
   String[1]                 $zabbix_version            = $zabbix::params::zabbix_version,
 ) inherits zabbix::params {
-  if ($manage_repo) {
+  if $manage_repo {
     case $facts['os']['name'] {
       'PSBM': {
         $majorrelease = '6'
@@ -56,15 +34,8 @@ class zabbix::repo (
     }
     case $facts['os']['family'] {
       'RedHat': {
-        # Zabbix-3.2 and newer RPMs are signed with the GPG key
-        if versioncmp($zabbix_version, '3.2') < 0 {
-          $gpgkey_zabbix = 'https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX'
-          $gpgkey_nonsupported = $gpgkey_zabbix
-        }
-        else {
-          $gpgkey_zabbix = 'https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX-A14FE591'
-          $gpgkey_nonsupported = 'https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX-79EA5ED4'
-        }
+        $gpgkey_zabbix = 'https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX-A14FE591'
+        $gpgkey_nonsupported = 'https://repo.zabbix.com/RPM-GPG-KEY-ZABBIX-79EA5ED4'
 
         $_repo_location = $repo_location ? {
           undef   => "https://repo.zabbix.com/zabbix/${zabbix_version}/rhel/${majorrelease}/\$basearch/",
@@ -108,6 +79,13 @@ class zabbix::repo (
             gpgcheck => '1',
             gpgkey   => $gpgkey_zabbix,
             priority => '1',
+          }
+        }
+
+        if ($facts['os']['release']['major'] == '7' and versioncmp($zabbix_version, '5.0') >= 0) {
+          package { 'zabbix-required-scl-repo':
+            ensure => 'latest',
+            name   => 'centos-release-scl',
           }
         }
       }
@@ -163,10 +141,17 @@ class zabbix::repo (
             id     => 'A1848F5352D022B9471D83D0082AB56BA14FE591',
             source => 'https://repo.zabbix.com/zabbix-official-repo.key',
           }
+
+          # Debian 11 provides Zabbix 5.0 by default. This can cause problems for 4.0 versions
+          $pinpriority = $facts['os']['release']['major'] ? {
+            '11'    => 1000,
+            default => undef,
+          }
           apt::source { 'zabbix':
             location => $_repo_location,
             repos    => 'main',
             release  => $releasename,
+            pin      => $pinpriority,
             require  => [
               Apt_key['zabbix-FBABD5F'],
               Apt_key['zabbix-A1848F5'],

@@ -4,8 +4,12 @@ Gemfile:
     ':test':
       - gem: 'fakefs'
       - gem: 'zabbixapi'
+      - gem: puppet-lint-param-docs
 spec/spec_helper.rb:
   mock_with: ':mocha'
+  spec_overrides:
+    - "require 'support/acceptance/supported_versions'"
+    - "require 'spec_helper_methods'"
 spec/spec_helper_acceptance.rb:
   unmanaged: false
 .github/workflows/ci.yml:
