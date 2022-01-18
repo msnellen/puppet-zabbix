@@ -3,12 +3,12 @@
 
 ############ GENERAL PARAMETERS #################
 
+<% if @pidfile and @kernel != 'windows'%>
 ### Option: PidFile
 #	Name of PID file.
 #
-# Mandatory: no
-# Default:
-# PidFile=/tmp/zabbix_agent2.pid
+PidFile=<%= @pidfile %>
+<% end %>
 
 ### Option: LogType
 #	Specifies where log messages are written to:
@@ -19,15 +19,16 @@
 # Mandatory: no
 # Default:
 # LogType=file
+LogType=<%= @logtype %><% end %>
 
+<% if @logtype == 'file' %>
 ### Option: LogFile
 #	Log file name for LogType 'file' parameter.
 #
 # Mandatory: yes, if LogType is set to file, otherwise no
 # Default:
 # LogFile=
-
-LogFile=/tmp/zabbix_agent2.log
+LogFile=<%= @logfile %>
 
 ### Option: LogFileSize
 #	Maximum size of log file in MB.
@@ -37,6 +38,8 @@ LogFile=/tmp/zabbix_agent2.log
 # Range: 0-1024
 # Default:
 # LogFileSize=1
+LogFileSize=<%= @logfilesize %>
+<% end %>
 
 ### Option: DebugLevel
 #	Specifies debug level:
@@ -117,7 +120,7 @@ ListenPort=<%= @listenport %>
 # Default:
 # ServerActive=
 
-ServerActive=127.0.0.1
+<% if @serveractive %>ServerActive=<%= @serveractive %><% end %>
 
 ### Option: Hostname
 #	List of comma delimited unique, case sensitive hostnames.
@@ -286,7 +289,6 @@ Timeout=<%= @timeout %>
 # Include=/usr/local/etc/zabbix_agentd.conf.d/*.conf
 
 Include=<%= @include_dir %>
-
 
 ####### USER-DEFINED MONITORED PARAMETERS #######
 
