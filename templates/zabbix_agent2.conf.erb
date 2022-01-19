@@ -19,7 +19,7 @@ PidFile=<%= @pidfile %>
 # Mandatory: no
 # Default:
 # LogType=file
-LogType=<%= @logtype %><% end %>
+<% if @logtype %>LogType=<%= @logtype %><% end %>
 
 <% if @logtype == 'file' %>
 ### Option: LogFile
