@@ -155,7 +155,6 @@ class zabbix::agent (
   Variant[Array, Hash] $zbx_interface_details          = [],
   $agent_configfile_path                               = $zabbix::params::agent_configfile_path,
   $pidfile                                             = $zabbix::params::agent_pidfile,
-  $servicename                                         = $zabbix::params::agent_servicename,
   Enum['console', 'file', 'system'] $logtype           = $zabbix::params::agent_logtype,
   Optional[Stdlib::Absolutepath] $logfile              = $zabbix::params::agent_logfile,
   $logfilesize                                         = $zabbix::params::agent_logfilesize,
@@ -216,17 +215,22 @@ class zabbix::agent (
   String $additional_service_params                    = $zabbix::params::additional_service_params,
   String $service_type                                 = $zabbix::params::service_type,
   Boolean $manage_startup_script                       = $zabbix::params::manage_startup_script,
-) inherits zabbix::params {
+  $servicename                                         = $zabbix::params::agent_servicename,
+  ) inherits zabbix::params {
   if $facts['os']['family'] == 'Debian' and versioncmp($facts['os']['release']['major'], '11') == 0 {
     if versioncmp($zabbix_version, '5.2') == 0 {
       fail('Zabbix 5.2 is not supported on Debian 11!')
     }
   }
 
-  if $zabbix_package_agent = 'zabbix_agent2' {
+  if $zabbix_package_agent == 'zabbix_agent2' {
     $agent_binary_name = 'zabbix_agent2'
   } else {
     $agent_binary_name = 'zabbix_agentd'
+  }
+
+  if $zabbix_package_agent == 'zabbix_agent2' {
+    $agent_servicename = $zabbix::params::agent2_servicename
   }
 
   # Find if listenip is set. If not, we can set to specific ip or
@@ -329,7 +333,7 @@ class zabbix::agent (
       agent_binary_name         => $agent_binary_name,
       service_name              => 'zabbix-agent',
       require                   => Package[$zabbix_package_agent],
-      agent_version             => $zabbix_package_agent,
+      # agent_version             => $zabbix_package_agent,
     }
   }
 
@@ -362,8 +366,8 @@ class zabbix::agent (
   }
 
   # Configuring the zabbix-agent configuration file
-  if zabbix_package_agent = 'zabbix_agent2'{
-    file { $agent_configfile_path:
+  if zabbix_package_agent == 'zabbix-agent2'{
+    file { $agent2_configfile_path:
       ensure  => file,
       owner   => $agent_config_owner,
       group   => $agent_config_group,
