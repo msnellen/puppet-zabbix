@@ -326,6 +326,8 @@ UnsafeUserParameters=<%= @unsafeuserparameters %>
 # Default:
 # UserParameterDir=
 
+<% if $facts['kernel'] == 'windows' %>
+
 ### Option: ControlSocket
 #	The control socket, used to send runtime commands with '-R' option.
 #
@@ -334,6 +336,8 @@ UnsafeUserParameters=<%= @unsafeuserparameters %>
 # ControlSocket=
 
 ControlSocket=/tmp/agent.sock
+
+<% end %>
 
 ####### TLS-RELATED PARAMETERS #######
 
