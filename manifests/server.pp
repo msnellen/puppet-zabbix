@@ -295,7 +295,7 @@ class zabbix::server (
     }
   }
 
-  if versioncmp($zabbix_version, '5.4') == 0 {
+  if versioncmp($zabbix_version, '5.4') >= 0 {
     package { 'zabbix-sql-scripts':
       ensure  => present,
       require => Class['zabbix::repo'],
@@ -309,8 +309,8 @@ class zabbix::server (
     'postgresql' : {
       $db = 'pgsql'
 
-      # Zabbix version 5.4 uses zabbix-sql-scripts for initializing the database.
-      if versioncmp($zabbix_version, '5.4') == 0 {
+      # Zabbix version 5.4 and higher uses zabbix-sql-scripts for initializing the database.
+      if versioncmp($zabbix_version, '5.4') >= 0 {
         $zabbix_database_require = [Package["zabbix-server-${db}"], Package['zabbix-sql-scripts']]
       } else {
         $zabbix_database_require = Package["zabbix-server-${db}"]
@@ -335,8 +335,8 @@ class zabbix::server (
     'mysql' : {
       $db = 'mysql'
 
-      # Zabbix version 5.4 uses zabbix-sql-scripts for initializing the database.
-      if versioncmp($zabbix_version, '5.4') == 0 {
+      # Zabbix version 5.4 and higher uses zabbix-sql-scripts for initializing the database.
+      if versioncmp($zabbix_version, '5.4') >= 0 {
         $zabbix_database_require = [Package["zabbix-server-${db}"], Package['zabbix-sql-scripts']]
       } else {
         $zabbix_database_require = Package["zabbix-server-${db}"]
