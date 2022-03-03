@@ -57,7 +57,6 @@ class zabbix::database::postgresql (
       } else {
         $zabbix_server_create_sql = "cd ${schema_path} && if [ -f create.sql.gz ]; then gunzip -f create.sql.gz ; fi && psql -h '${database_host}' -U '${database_user}' ${port}-d '${database_name}' -f create.sql && touch /etc/zabbix/.schema.done"
       }
-      $zabbix_server_create_sql = "cd ${schema_path} && if [ -f create.sql.gz ]; then gunzip -f create.sql.gz ; fi && psql -h '${database_host}' -U '${database_user}' ${port}-d '${database_name}' -f create.sql && touch /etc/zabbix/.schema.done"
       $zabbix_server_images_sql = 'touch /etc/zabbix/.images.done'
       $zabbix_server_data_sql   = 'touch /etc/zabbix/.data.done'
     }
