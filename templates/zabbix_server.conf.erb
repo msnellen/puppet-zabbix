@@ -723,6 +723,7 @@ LoadModulePath=<%= @loadmodulepath %>
 # Mandatory: no
 # Default: 
 # HANodeName=
+<% if @hanodename %>HANodeName=<%= @hanodename -%><% end %>
 
 ## Option: NodeAddress
 #	IP or hostname with optional port to specify how frontend should connect to the server.
@@ -733,4 +734,5 @@ LoadModulePath=<%= @loadmodulepath %>
 # Mandatory: no
 # Default: 
 # NodeAddress=localhost:10051
+<% if @nodeaddress %>NodeAddress=<%= @nodeaddress -%><% end %>
 <% end %>

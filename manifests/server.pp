@@ -141,6 +141,8 @@
 # @param socketdir
 #   IPC socket directory.
 #   Directory to store IPC sockets used by internal Zabbix services.
+# @param hanodename Node name for HA Clustering
+# @param nodeaddress Node address for front end connection
 # @example
 #   When running everything on a single node, please check
 #   documentation in init.pp
@@ -275,6 +277,8 @@ class zabbix::server (
   Optional[Integer[1, 3600]] $servicemanagersyncfrequency                     = undef,
   Optional[Integer[1, 3600]] $problemhousekeepingfrequency                    = undef,
   Optional[Integer[1, 10-0]] $startodbcpollers                                = undef,
+  Optional[String] $hanodename                                                = undef,
+  Optional[String] $nodeaddress                                               = undef,
 ) inherits zabbix::params {
   # zabbix server 5.2 and 5.4 is not supported on RHEL 7.
   # https://www.zabbix.com/documentation/current/manual/installation/install_from_packages/rhel_centos

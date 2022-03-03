@@ -375,6 +375,24 @@ describe 'zabbix::server' do
         it { is_expected.to contain_file('/etc/zabbix/zabbix_server.conf').with_content %r{^StartODBCPollers=2} }
       end
 
+      context 'with zabbix_server.conf and version 6.0 ha' do
+        let :param do
+          {
+            servicemanagersyncfrequency: 2,
+            problemhousekeepingfrequency: 2,
+            startodbcpollers: 2,
+            zabbix_version: '6.0'
+            hanodename: 'node1'
+            nodeaddress: 'localhost:10051'
+          }
+        end
+
+        it { is_expected.to contain_file('/etc/zabbix/zabbix_server.conf').with_content %r{^ServiceManagerSyncFrequency=2} }
+        it { is_expected.to contain_file('/etc/zabbix/zabbix_server.conf').with_content %r{^ProblemHousekeepingFrequency=2} }
+        it { is_expected.to contain_file('/etc/zabbix/zabbix_server.conf').with_content %r{^StartODBCPollers=2} }
+        it { is_expected.to contain_file('/etc/zabbix/zabbix_server.conf').with_content %r{^HANodeName=node1} }
+        it { is_expected.to contain_file('/etc/zabbix/zabbix_server.conf').with_content %r{^NodeAddress=localhost:10051} }
+      end
 
       context 'with zabbix_server.conf and logtype declared' do
         describe 'as system' do
