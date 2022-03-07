@@ -104,14 +104,16 @@ class zabbix::database (
         }
 
         # When database not in some server with zabbix server include pg_hba_rule to server
-        if ($database_host_ip != $zabbix_server_ip) or ($zabbix_web_ip != $zabbix_server_ip) {
-          postgresql::server::pg_hba_rule { 'Allow zabbix-server to access database':
-            description => 'Open up postgresql for access from zabbix-server',
-            type        => 'host',
-            database    => $database_name,
-            user        => $database_user,
-            address     => "${zabbix_server_ip}/32",
-            auth_method => 'md5',
+        $zabbix_server_ip.each |$server_ip| {
+          if ($database_host_ip != $server_ip) {
+            postgresql::server::pg_hba_rule { "Allow zabbix-server at ${server_ip} to access database":
+              description => 'Open up postgresql for access from zabbix-server',
+              type        => 'host',
+              database    => $database_name,
+              user        => $database_user,
+              address     => "${server_ip}/32",
+              auth_method => 'md5',
+            }
           }
         }
 
@@ -119,16 +121,18 @@ class zabbix::database (
         # access the database from the network. Postgresql allows this via the
         # pg_hba.conf file. As this file only accepts ip addresses, the ip address
         # of server and web has to be supplied as an parameter.
-        if $zabbix_web_ip != $zabbix_server_ip {
-          postgresql::server::pg_hba_rule { 'Allow zabbix-web to access database':
-            description => 'Open up postgresql for access from zabbix-web',
-            type        => 'host',
-            database    => $database_name,
-            user        => $database_user,
-            address     => "${zabbix_web_ip}/32",
-            auth_method => 'md5',
-          }
-        } # END if $zabbix_web_ip != $zabbix_server_ip
+        $zabbix_web_ip.each |$web_ip| {
+          if $zabbix_web_ip != $zabbix_server_ip {
+            postgresql::server::pg_hba_rule { "Allow zabbix-web at ${web_ip} to access database":
+              description => 'Open up postgresql for access from zabbix-web',
+              type        => 'host',
+              database    => $database_name,
+              user        => $database_user,
+              address     => "${web_ip}/32",
+              auth_method => 'md5',
+            }
+          } # END if $zabbix_web_ip != $zabbix_server_ip
+        }
 
         # This is some specific action for the zabbix-proxy. This is due to better
         # parameter naming.
