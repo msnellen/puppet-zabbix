@@ -104,34 +104,71 @@ class zabbix::database (
         }
 
         # When database not in some server with zabbix server include pg_hba_rule to server
-        $zabbix_server_ip.each |$server_ip| {
-          if ($database_host_ip != $server_ip) {
-            postgresql::server::pg_hba_rule { "Allow zabbix-server at ${server_ip} to access database":
-              description => 'Open up postgresql for access from zabbix-server',
-              type        => 'host',
-              database    => $database_name,
-              user        => $database_user,
-              address     => "${server_ip}/32",
-              auth_method => 'md5',
+        case $zabbix_server_ip {
+          Array: {
+            $zabbix_server_ip.each |$server_ip| {
+              if ($database_host_ip != $server_ip) {
+                postgresql::server::pg_hba_rule { "Allow zabbix-server at ${server_ip} to access database":
+                  description => 'Open up postgresql for access from zabbix-server',
+                  type        => 'host',
+                  database    => $database_name,
+                  user        => $database_user,
+                  address     => "${server_ip}/32",
+                  auth_method => 'md5',
+                }
+              }
             }
           }
+          String: {
+            if ($database_host_ip != $zabbix_server_ip) {
+              postgresql::server::pg_hba_rule { "Allow zabbix-server at ${zabbix_server_ip} to access database":
+                description => 'Open up postgresql for access from zabbix-server',
+                type        => 'host',
+                database    => $database_name,
+                user        => $database_user,
+                address     => "${zabbix_server_ip}/32",
+                auth_method => 'md5',
+              }
+            }
+          }
+          default: {
+            fail('Zabbix server IP unknown.')
+          }
         }
-
         # When every component has its own server, we have to allow those servers to
         # access the database from the network. Postgresql allows this via the
         # pg_hba.conf file. As this file only accepts ip addresses, the ip address
         # of server and web has to be supplied as an parameter.
-        $zabbix_web_ip.each |$web_ip| {
-          if $zabbix_web_ip != $zabbix_server_ip {
-            postgresql::server::pg_hba_rule { "Allow zabbix-web at ${web_ip} to access database":
-              description => 'Open up postgresql for access from zabbix-web',
-              type        => 'host',
-              database    => $database_name,
-              user        => $database_user,
-              address     => "${web_ip}/32",
-              auth_method => 'md5',
+        case $zabbix_web_ip {
+          Array: {
+            $zabbix_web_ip.each |$web_ip| {
+              if $database_host_ip != $web_ip {
+                postgresql::server::pg_hba_rule { "Allow zabbix-web at ${web_ip} to access database":
+                  description => 'Open up postgresql for access from zabbix-web',
+                  type        => 'host',
+                  database    => $database_name,
+                  user        => $database_user,
+                  address     => "${web_ip}/32",
+                  auth_method => 'md5',
+                }
+              }
             }
-          } # END if $zabbix_web_ip != $zabbix_server_ip
+          }
+          String: {
+            if $database_host_ip != $zabbix_web_ip {
+              postgresql::server::pg_hba_rule { "Allow zabbix-web at ${zabbix_web_ip} to access database":
+                description => 'Open up postgresql for access from zabbix-web',
+                type        => 'host',
+                database    => $database_name,
+                user        => $database_user,
+                address     => "${zabbix_web_ip}/32",
+                auth_method => 'md5',
+              }
+            }
+          }
+          default: {
+            fail('Zabbix web IP unknown.')
+          }
         }
 
         # This is some specific action for the zabbix-proxy. This is due to better
