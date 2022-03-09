@@ -26,39 +26,45 @@ $DB['SCHEMA'] = '';
 $DB['DOUBLE_IEEE754'] = 'true';
 <% end -%>
 
+<% if @zabbix_server -%>
 $ZBX_SERVER      = '<%= @zabbix_server %>';
+<% if @zabbix_listenport -%>
 $ZBX_SERVER_PORT = '<%= @zabbix_listenport %>';
+<% end -%>
+<% if @zabbix_server_name -%>
 $ZBX_SERVER_NAME = '<%= @zabbix_server_name %>';
+<% end -%>
+<% end -%>
 
 $IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
 
-<% if @ldap_cacert %>
+<% if @ldap_cacert -%>
 putenv("LDAPTLS_CACERT=<%= @ldap_cacert %>");
-<% end %>
-<% if @ldap_clientcert %>
+<% end -%>
+<% if @ldap_clientcert -%>
 putenv("LDAPTLS_CERT=<%= @ldap_clientcert %>");
-<% end %>
-<% if @ldap_clientkey %>
+<% end -%>
+<% if @ldap_clientkey -%>
 putenv("LDAPTLS_KEY=<%= @ldap_clientkey %>");
-<% end %>
-<% if @ldap_reqcert %>
+<% end -%>
+<% if @ldap_reqcert -%>
 putenv("TLS_REQCERT=<%= @ldap_reqcert %>");
-<% end %>
+<% end -%>
 
-<% if @saml_sp_key %>
+<% if @saml_sp_key -%>
 $SSO['SP_KEY'] = '<%= @saml_sp_key -%>';
-<% end %>
-<% if @saml_sp_cert %>
+<% end -%>
+<% if @saml_sp_cert -%>
 $SSO['SP_CERT'] = '<%= @saml_sp_cert -%>';
-<% end %>
-<% if @saml_idp_cert %>
+<% end -%>
+<% if @saml_idp_cert -%>
 $SSO['IDP_CERT'] = '<%= @saml_idp_cert -%>';
-<% end %>
-<% if @saml_settings %>
+<% end -%>
+<% if @saml_settings -%>
 $SSO['SETTINGS'] = [ <%= JSON.pretty_generate(@saml_settings, space_before: " ")
                              .sub("{", "")
                              .gsub(" : ", " => ")
                              .gsub("{", "[")
                              .gsub("}", "]") -%>;
-<% end %>
+<% end -%>
 ?>
