@@ -26,7 +26,7 @@ $DB['SCHEMA'] = '';
 $DB['DOUBLE_IEEE754'] = 'true';
 <% end -%>
 
-<% if @zabbix_server -%>
+<% if @zabbix_server != '@HAZABBIX' -%>
 $ZBX_SERVER      = '<%= @zabbix_server %>';
 <% if @zabbix_listenport -%>
 $ZBX_SERVER_PORT = '<%= @zabbix_listenport %>';
