@@ -153,6 +153,7 @@ ListenPort=<%= @listenport %>
 # Range: 0-255 characters
 # Default:
 # HostMetadata=
+<% if @hostmetadata %>HostMetadata=<%= @hostmetadata %><% end %>
 
 ### Option: HostMetadataItem
 #	Optional parameter that defines an item used for getting host metadata.
